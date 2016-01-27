@@ -92,8 +92,7 @@ var highlightStyle = {
     fillColor: '#2262CC'
 };
 
-var featureLayer = L.mapbox.featureLayer()
-    .addTo(map);
+var featureLayer = L.mapbox.featureLayer().addTo(map);
 var disableHighlight = false;
 
 d3.json("ti.geojson", function(error, shapes) {
@@ -104,12 +103,12 @@ d3.json("ti.geojson", function(error, shapes) {
 		layer.setStyle(defaultStyle);
 		layer.on("mouseover", function (e) {
 			if(disableHighlight) return;
-	        layer.setStyle(highlightStyle);
-	    });
-	    layer.on("mouseout", function (e) {
-	    	if(disableHighlight) return;
-	        layer.setStyle(defaultStyle);
-	    });
+	        	layer.setStyle(highlightStyle);
+		});
+		layer.on("mouseout", function (e) {
+	    		if(disableHighlight) return;
+	        	layer.setStyle(defaultStyle);
+		});
 	});
 });
 
@@ -130,16 +129,16 @@ app.controller("placeCtrl", function($scope, $firebaseObject) {
 
 	$scope.placeFields = [];
 
-    ["condoPct", "apartmentPct", "retailPct", "officePct", "publicPct", "otherPct"].forEach(function (key) {
-    	$scope.placeFields.push({
-	      key: key,
-	      type: 'input',
-	      templateOptions: {
-	        type: 'text',
-	        label: key
-	      }
-	    });
-    });
+	["condoPct", "apartmentPct", "retailPct", "officePct", "publicPct", "otherPct"].forEach(function (key) {
+    		$scope.placeFields.push({
+			key: key,
+			type: 'input',
+			templateOptions: {
+				type: 'text',
+				label: key
+			}
+		});
+	});
 
 	$scope.activatePlace = function (feature) {
 
