@@ -1,29 +1,187 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset=utf-8 />
+
 <title>Treasure Island</title>
+
 <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
 <script src='https://api.mapbox.com/mapbox.js/v2.2.4/mapbox.js'></script>
 <link href='https://api.mapbox.com/mapbox.js/v2.2.4/mapbox.css' rel='stylesheet' />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.13/d3.min.js"></script>
+
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"/>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular-animate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.1.1/ui-bootstrap.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/api-check/7.5.5/api-check.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-formly/7.5.0/formly.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-formly-templates-bootstrap/6.2.0/angular-formly-templates-bootstrap.min.js"></script>
+
+<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
+<script src="https://cdn.firebase.com/libs/angularfire/1.1.3/angularfire.min.js"></script>
+
 <style>
-  body { margin:0; padding:0; }
-  #map { position:absolute; top:0; bottom:0; width:100%; }
+	body { margin:0; padding:0; }
+	#map { position:absolute; left: 0; top:0; bottom:0; width:100%; }
+
+	#toolbar {
+	    position: absolute;
+	    top: 10px;
+	    right: 10px;
+	    bottom: 30px;
+	    width: 400px;
+	    overflow: auto;
+	    background: rgba(255, 255, 255, 0.9);
+	    border-radius: 6px;
+	}
 </style>
+
 </head>
-<body>
-<div id='map'></div>
+
+<body ng-app="app" ng-controller="mainCtrl">
+
+<div class="container-fluid">
+    <div class="row-fluid">
+
+        <div id='map'></div>
+
+        <div id="toolbar" ng-show="showToolbar">
+            <div style="margin: 15px; margin-top: 30px;">
+
+            	<div ng-show="showPlace" ng-controller="placeCtrl">
+
+            		<h2>Parcel Id: {{feature.properties.parcel_id}}</h2>
+            		<formly-form model="place" fields="placeFields"/>
+                </div>
+
+                <div ng-hide="showPlace">
+                    Welcome to the Demo!
+                <div>
+
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
+
 L.mapbox.accessToken = 'pk.eyJ1IjoiZnNjb3R0Zm90aSIsImEiOiJLVHVqNHlNIn0.T0Ca4SWbbTc1p2jogYLQyA';
 
 var map = L.mapbox.map('map', 'fscottfoti.kaeo1aml')
     .setView([37.823512,-122.370358], 16);
 
-var featureLayer = L.mapbox.featureLayer()
-    .loadURL('ti.geojson')
-    .addTo(map);
+var defaultStyle = {
+    color: "#2262CC",
+    weight: 2,
+    opacity: 0.6,
+    fillOpacity: 0.1,
+    fillColor: "#2262CC"
+};
 
+var highlightStyle = {
+    color: '#2262CC', 
+    weight: 3,
+    opacity: 0.6,
+    fillOpacity: 0.65,
+    fillColor: '#2262CC'
+};
+
+var featureLayer = L.mapbox.featureLayer()
+    .addTo(map);
+var disableHighlight = false;
+
+d3.json("ti.geojson", function(error, shapes) {
+
+	featureLayer.setGeoJSON(shapes);
+
+	featureLayer.eachLayer(function (layer) {
+		layer.setStyle(defaultStyle);
+		layer.on("mouseover", function (e) {
+			if(disableHighlight) return;
+	        layer.setStyle(highlightStyle);
+	    });
+	    layer.on("mouseout", function (e) {
+	    	if(disableHighlight) return;
+	        layer.setStyle(defaultStyle);
+	    });
+	});
+});
+
+var SCENARIO = "baseline";
+
+var firebase_url = "https://treasureisland.firebaseio.com/" + SCENARIO;
+
+var app = angular.module("app", ["firebase", "ui.bootstrap", "formly", "formlyBootstrap"]);
+
+
+app.controller("mainCtrl", function($scope, $firebaseObject) {
+	$scope.showToolbar = false;
+	$scope.showPlace = false;
+});
+
+
+app.controller("placeCtrl", function($scope, $firebaseObject) {
+
+	$scope.placeFields = [];
+
+    ["condoPct", "apartmentPct", "retailPct", "officePct", "publicPct", "otherPct"].forEach(function (key) {
+    	$scope.placeFields.push({
+	      key: key,
+	      type: 'input',
+	      templateOptions: {
+	        type: 'text',
+	        label: key
+	      }
+	    });
+    });
+
+	$scope.activatePlace = function (feature) {
+
+		$scope.$parent.showToolbar = true;
+		$scope.$parent.showPlace = true;
+		$scope.feature = feature;
+		$scope.place = {};
+
+		var ref = new Firebase(firebase_url).child("places").child(feature.properties.parcel_id);
+
+		if($scope.unbind) {
+			$scope.unbind();
+		}
+
+		$firebaseObject(ref).$bindTo($scope, "place").then(function(unbind) {
+			$scope.unbind = unbind;
+		});
+	};
+
+	featureLayer.on('click', function(e) {
+
+		if($scope.activeLayer) $scope.activeLayer.setStyle(defaultStyle);
+		$scope.activeLayer = e.layer;
+		disableHighlight = true;
+		e.layer.setStyle(highlightStyle);
+
+		$scope.$apply(function () {
+			$scope.activatePlace(e.layer.feature);
+		});
+	});
+
+	map.on('click', function (e) {
+
+		if($scope.activeLayer) $scope.activeLayer.setStyle(defaultStyle);
+		disableHighlight = false;
+		$scope.activeLayer = undefined;
+
+		$scope.$apply(function () {
+			$scope.$parent.showToolbar = false;
+		});
+	});
+});
 </script>
 </body>
 </html>
