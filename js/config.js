@@ -31,13 +31,18 @@ config = {
 
 		var placeFields = [];
 
-		["residentialUnits", "nonResidentialSqft"].forEach(function (key) {
+		[
+			{key: "residentialUnits", label: "Residential Units"},
+			{key: "nonResidentialSqft", label: "Non-residential Sqft"}
+			
+		].forEach(function (obj) {
+
     		placeFields.push({
-				key: key,
+				key: obj.key,
 				type: 'input',
 				templateOptions: {
 					type: 'text',
-					label: key
+					label: obj.label
 				}
 			});
     	});
