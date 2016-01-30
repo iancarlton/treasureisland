@@ -82,6 +82,10 @@ config = {
 
 	mergeGeojsonFirebase: function(features, db) {
 
+		if(!features) return;
+		
+		var features = JSON.parse(JSON.stringify(features));
+
 		return _.map(features, function (f) {
 
 			_.extend(f["properties"], db[f.properties.parcel_id]);

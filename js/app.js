@@ -10,7 +10,7 @@ var highlightStyle = config.highlightStyle;
 var featureLayer = L.mapbox.featureLayer().addTo(map);
 var disableHighlight = false;
 
-var FIREBASE_URL = config.firebaseUrl + "/" + "baseline";
+var FIREBASE_URL = config.firebaseUrl + "/" + config.defaultScenario;
 
 var app = angular.module("app", ["firebase", "ui.bootstrap", "formly", "formlyBootstrap", "ngNumeraljs"]);
 
@@ -29,11 +29,52 @@ app.filter('inMillions', function() {
 });
 
 
+var readFirebasePlaces = function ($rootScope) {
+
+	$rootScope.db = {};
+	$rootScope.$broadcast('dataUpdated');
+
+	var placesRef = new Firebase(FIREBASE_URL).child("places");
+
+	placesRef.on("child_added", function (snapshot) {
+		$rootScope.db[snapshot.key()] = snapshot.val();
+		$rootScope.$broadcast('dataUpdated');
+	});
+
+	placesRef.on("child_changed", function (snapshot) {
+		$rootScope.db[snapshot.key()] = snapshot.val();
+		$rootScope.$broadcast('dataUpdated');
+	});
+
+	placesRef.on("child_removed", function (snapshot) {
+		delete $rootScope.db[snapshot.key()];
+		$rootScope.$broadcast('dataUpdated');
+	});
+}
+
+
 app.run(function($rootScope, $firebaseArray) {
+
+	$rootScope.safeApply = function(fn) {
+		var phase = this.$root.$$phase;
+		if(phase == '$apply' || phase == '$digest') {
+			if(fn && (typeof(fn) === 'function')) {
+				fn();
+			}
+		} else {
+			this.$apply(fn);
+		}
+	};
 
 	var ref = new Firebase(config.firebaseUrl).child("scenarios");
 	$rootScope.scenarios = $firebaseArray(ref);
 	$rootScope.activeScenario = config.defaultScenario;
+
+	$rootScope.$watch("activeScenario", function (newActiveScenario) {
+
+		FIREBASE_URL = config.firebaseUrl + "/" + newActiveScenario;
+		readFirebasePlaces($rootScope);
+	});
 
 	// global configuration
 
@@ -65,25 +106,6 @@ app.run(function($rootScope, $firebaseArray) {
 		    		if(disableHighlight) return;
 		        	layer.setStyle(defaultStyle);
 			});
-		});
-
-		// read all the data from firebase
-
-		var placesRef = new Firebase(FIREBASE_URL).child("places");
-
-		placesRef.on("child_added", function (snapshot) {
-			$rootScope.db[snapshot.key()] = snapshot.val();
-			$rootScope.$broadcast('dataUpdated');
-		});
-
-		placesRef.on("child_changed", function (snapshot) {
-			$rootScope.db[snapshot.key()] = snapshot.val();
-			$rootScope.$broadcast('dataUpdated');
-		});
-
-		placesRef.on("child_removed", function (snapshot) {
-			delete $rootScope.db[snapshot.key()];
-			$rootScope.$broadcast('dataUpdated');
 		});
     });
 });
@@ -139,7 +161,7 @@ app.controller("mainCtrl", function($scope, $firebaseObject) {
 });
 
 
-var throttledAnalytics = _.throttle(config.runAnalytics, 250);
+var throttledAnalytics = _.throttle(config.runAnalytics, 500);
 
 app.controller("analyticsCtrl", function($scope, $rootScope) {
 
@@ -153,7 +175,8 @@ app.controller("analyticsCtrl", function($scope, $rootScope) {
 		if(!features) return;
 
 		var v = throttledAnalytics(features, function (v) {
-			$scope.$apply(function () {
+			$rootScope.safeApply(function () {
+
 				$scope.analytics = v;
 			})
 		});
