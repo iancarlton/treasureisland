@@ -50,21 +50,57 @@ config = {
     	return placeFields;
 	},
 
-	runAnalytics: function (features) {
+	runAnalytics: function (features, callback) {
 
-		if(!features) return {};
-
-		return {
+		var v = {
 			"total_residential_units": d3.sum(features, function (v) {
-				return v.properties.total_residential_units;
+				return v.properties.residentialUnits;
 			}),
 			"total_non_residential_sqft": d3.sum(features, function (v) {
-				return v.properties.total_non_residential_sqft;
+				return v.properties.nonResidentialSqft;
 			}),
 			"total_acres": d3.sum(features, function (v) {
-				return v.properties.parcel_acres;
+				return v.properties.parcelAcres;
 			})
 		};
 
+		// asynchronous
+		callback(v);
+	},
+
+	// this is a rather odd but important function which merged the "base"
+	// data which comes out of the geojson with the override attribute
+	// data which comes out of firebase
+
+	mergeGeojsonFirebase: function(features, db) {
+
+		return _.map(features, function (f) {
+
+			_.extend(f["properties"], db[f.properties.parcel_id]);
+			return f;
+
+		});
+	},
+
+	// this method moves data from the geojson into firebase - this only
+	// really needs to be done once, although I guess you can do it
+	// multiple times when debugging to reset to the initial state
+
+	initializeData: function (features) {
+
+		_.each(features, function (feature) {
+			var ref = new Firebase(FIREBASE_URL).child("places").child(feature.properties.parcel_id);
+
+			[
+				{key: "residentialUnits", prop: "total_residential_units"},
+				{key: "nonResidentialSqft", prop: "total_non_residential_sqft"},
+				{key: "parcelAcres", prop: "parcel_acres"}
+				
+			].forEach(function (obj) {
+
+	    		ref.child(obj.key).set(feature.properties[obj.prop]);
+
+	    	});
+		});
 	}
 };

@@ -24,6 +24,7 @@ app.run(function($rootScope) {
     	// read a geojson file - I'm sure there's lots of places for
     	// shapes to come from but this is a common one
 
+    	$rootScope.db = {};
     	$rootScope.features = shapes.features;
     	$rootScope.$broadcast('dataUpdated');
 
@@ -47,7 +48,6 @@ app.run(function($rootScope) {
 		// read all the data from firebase
 
 		var placesRef = new Firebase(FIREBASE_URL).child("places");
-		$rootScope.db = {};
 
 		placesRef.on("child_added", function (snapshot) {
 			$rootScope.db[snapshot.key()] = snapshot.val();
@@ -76,14 +76,24 @@ app.controller("mainCtrl", function($scope, $firebaseObject) {
 });
 
 
+var throttledAnalytics = _.throttle(config.runAnalytics, 250);
+
 app.controller("analyticsCtrl", function($scope, $rootScope) {
 
 	// controller for the analytics window
 
-	var throttled = _.throttle(config.runAnalytics, 250);
-
 	$rootScope.$on("dataUpdated", function (features) {
-		$scope.analytics = throttled($rootScope.features);
+
+		var features = config.mergeGeojsonFirebase(
+			$rootScope.features, $rootScope.db);
+
+		if(!features) return;
+
+		var v = throttledAnalytics(features, function (v) {
+			$scope.$apply(function () {
+				$scope.analytics = v;
+			})
+		});
 	});
 });
 
