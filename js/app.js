@@ -10,8 +10,6 @@ var highlightStyle = config.highlightStyle;
 var featureLayer = L.mapbox.featureLayer().addTo(map);
 var disableHighlight = false;
 
-var FIREBASE_URL = config.firebaseUrl + "/" + config.defaultScenario;
-
 var app = angular.module("app", ["firebase", "ui.bootstrap", "formly", "formlyBootstrap", "ngNumeraljs"]);
 
 
@@ -34,7 +32,7 @@ var readFirebasePlaces = function ($rootScope) {
 	$rootScope.db = {};
 	$rootScope.$broadcast('dataUpdated');
 
-	var placesRef = new Firebase(FIREBASE_URL).child("places");
+	var placesRef = new Firebase($rootScope.firebaseUrl()).child("places");
 
 	placesRef.on("child_added", function (snapshot) {
 		$rootScope.db[snapshot.key()] = snapshot.val();
@@ -66,13 +64,15 @@ app.run(function($rootScope, $firebaseArray) {
 		}
 	};
 
+	$rootScope.firebaseUrl = function () {
+		return config.firebaseUrl + "/" + $rootScope.activeScenario;
+	};
+
 	var ref = new Firebase(config.firebaseUrl).child("scenarios");
 	$rootScope.scenarios = $firebaseArray(ref);
 	$rootScope.activeScenario = config.defaultScenario;
 
-	$rootScope.$watch("activeScenario", function (newActiveScenario) {
-
-		FIREBASE_URL = config.firebaseUrl + "/" + newActiveScenario;
+	$rootScope.$watch("activeScenario", function () {
 		readFirebasePlaces($rootScope);
 	});
 
@@ -195,17 +195,25 @@ app.controller("placeCtrl", function($scope, $firebaseObject) {
 		$scope.$parent.showToolbar = true;
 		$scope.$parent.showPlace = true;
 		$scope.feature = feature;
-		$scope.place = {};
 
-		var ref = new Firebase(FIREBASE_URL).child("places").child(feature.properties.parcel_id);
 
-		if($scope.unbind) {
-			$scope.unbind();
-		}
+		var bindPlace = function (feature) {
+			var ref = new Firebase($scope.firebaseUrl()).child("places").child(feature.properties.parcel_id);
 
-		$firebaseObject(ref).$bindTo($scope, "place").then(function(unbind) {
-			$scope.unbind = unbind;
+			if($scope.unbind) {
+				$scope.unbind();
+			}
+
+			$firebaseObject(ref).$bindTo($scope, "place").then(function(unbind) {
+				$scope.unbind = unbind;
+			});
+		};
+
+		$scope.$watch("activeScenario", function () {
+			bindPlace(feature);
 		});
+
+		bindPlace(feature);
 	};
 
 	featureLayer.on('click', function(e) {
