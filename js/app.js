@@ -10,7 +10,7 @@ var highlightStyle = config.highlightStyle;
 var featureLayer = L.mapbox.featureLayer().addTo(map);
 var disableHighlight = false;
 
-var FIREBASE_URL = config.firebaseUrl + "/" + config.defaultScenario;
+var FIREBASE_URL = config.firebaseUrl + "/" + "baseline";
 
 var app = angular.module("app", ["firebase", "ui.bootstrap", "formly", "formlyBootstrap", "ngNumeraljs"]);
 
@@ -29,7 +29,11 @@ app.filter('inMillions', function() {
 });
 
 
-app.run(function($rootScope) {
+app.run(function($rootScope, $firebaseArray) {
+
+	var ref = new Firebase(config.firebaseUrl).child("scenarios");
+	$rootScope.scenarios = $firebaseArray(ref);
+	$rootScope.activeScenario = config.defaultScenario;
 
 	// global configuration
 
@@ -82,6 +86,47 @@ app.run(function($rootScope) {
 			$rootScope.$broadcast('dataUpdated');
 		});
     });
+});
+
+
+app.controller("navbarCtrl", function ($scope, $rootScope, $firebaseObject, $uibModal) {
+
+	$scope.activeScenarioName = function () {
+		var rec = $scope.scenarios.$getRecord($scope.activeScenario);
+		return rec ? rec.name : '';
+	};
+
+	$scope.setActive = function (scenario) {
+		$rootScope.activeScenario = scenario.$id;
+	};
+
+	$scope.open = function (mode) {
+
+		$uibModal.open({
+			templateUrl: 'scenarioPickerModal.html',
+			controller: 'scenarioPickerModalCtrl',
+			size: "sm",
+			resolve: {
+				mode: function () { mode || "new" }
+			}
+		}).result.then(function (name) {
+			$rootScope.scenarios.$add({ name: name }).then(function(ref) {
+				$rootScope.activeScenario = ref.key();
+			});
+		});
+	};
+});
+
+
+app.controller('scenarioPickerModalCtrl', function ($scope, $uibModalInstance, mode) {
+
+	$scope.ok = function () {
+		$uibModalInstance.close($scope.name);
+	};
+
+	$scope.cancel = function () {
+		$uibModalInstance.dismiss();
+	};
 });
 
 

@@ -2,7 +2,7 @@ config = {
 
 	mapboxToken: 'pk.eyJ1IjoiZnNjb3R0Zm90aSIsImEiOiJLVHVqNHlNIn0.T0Ca4SWbbTc1p2jogYLQyA',
 
-	defaultScenario: "baseline",
+	defaultScenario: "-K9JUejl-avKZl9oAIVH",
 
 	firebaseUrl: "https://treasureisland.firebaseio.com",
 
