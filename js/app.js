@@ -14,6 +14,7 @@ var FIREBASE_URL = config.firebaseUrl + "/" + config.defaultScenario;
 
 var app = angular.module("app", ["firebase", "ui.bootstrap", "formly", "formlyBootstrap", "ngNumeraljs"]);
 
+
 app.run(function($rootScope) {
 
 	// global configuration
@@ -23,9 +24,8 @@ app.run(function($rootScope) {
     	// read a geojson file - I'm sure there's lots of places for
     	// shapes to come from but this is a common one
 
-    	$rootScope.$apply(function () {
-    		$rootScope.features = shapes.features;
-    	});
+    	$rootScope.features = shapes.features;
+    	$rootScope.$broadcast('dataUpdated');
 
 		featureLayer.setGeoJSON(shapes);
 
@@ -42,6 +42,26 @@ app.run(function($rootScope) {
 		    		if(disableHighlight) return;
 		        	layer.setStyle(defaultStyle);
 			});
+		});
+
+		// read all the data from firebase
+
+		var placesRef = new Firebase(FIREBASE_URL).child("places");
+		$rootScope.db = {};
+
+		placesRef.on("child_added", function (snapshot) {
+			$rootScope.db[snapshot.key()] = snapshot.val();
+			$rootScope.$broadcast('dataUpdated');
+		});
+
+		placesRef.on("child_changed", function (snapshot) {
+			$rootScope.db[snapshot.key()] = snapshot.val();
+			$rootScope.$broadcast('dataUpdated');
+		});
+
+		placesRef.on("child_removed", function (snapshot) {
+			delete $rootScope.db[snapshot.key()];
+			$rootScope.$broadcast('dataUpdated');
 		});
     });
 });
@@ -60,8 +80,10 @@ app.controller("analyticsCtrl", function($scope, $rootScope) {
 
 	// controller for the analytics window
 
-	$rootScope.$watch("features", function (features) {
-		$scope.analytics = config.runAnalytics(features);
+	var throttled = _.throttle(config.runAnalytics, 250);
+
+	$rootScope.$on("dataUpdated", function (features) {
+		$scope.analytics = throttled($rootScope.features);
 	});
 });
 

@@ -44,7 +44,8 @@
 
             	<div ng-show="showPlace" ng-controller="placeCtrl">
 
-	            	<div ng-include="'views/place.html'"></div>
+	            	<h2>Parcel Id: {{feature.properties.parcel_id}}</h2>
+					<formly-form model="place" fields="placeFields"/>
 
                 </div>
 
