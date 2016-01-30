@@ -89,7 +89,7 @@ app.run(function($rootScope, $firebaseArray) {
 
     	// move data to firebase
     	// this overwrites ALL firebase data!
-    	// config.initializeData(shapes.features);
+    	// config.initializeData(shapes.features, $rootScope.firebaseUrl());
 
 		featureLayer.setGeoJSON(shapes);
 
@@ -152,7 +152,7 @@ app.controller('scenarioPickerModalCtrl', function ($scope, $uibModalInstance, m
 });
 
 
-app.controller("mainCtrl", function($scope, $firebaseObject) {
+app.controller("mainCtrl", function($scope, $rootScope, $firebaseObject) {
 
 	// root controller for the whole app
 
@@ -184,7 +184,7 @@ app.controller("analyticsCtrl", function($scope, $rootScope) {
 });
 
 
-app.controller("placeCtrl", function($scope, $firebaseObject) {
+app.controller("placeCtrl", function($scope, $rootScope, $firebaseObject) {
 
 	// controller for the place description window
 
@@ -196,24 +196,15 @@ app.controller("placeCtrl", function($scope, $firebaseObject) {
 		$scope.$parent.showPlace = true;
 		$scope.feature = feature;
 
+		var ref = new Firebase($scope.firebaseUrl()).child("places").child(feature.properties.parcel_id);
 
-		var bindPlace = function (feature) {
-			var ref = new Firebase($scope.firebaseUrl()).child("places").child(feature.properties.parcel_id);
+		if($scope.unbind) {
+			$scope.unbind();
+		}
 
-			if($scope.unbind) {
-				$scope.unbind();
-			}
-
-			$firebaseObject(ref).$bindTo($scope, "place").then(function(unbind) {
-				$scope.unbind = unbind;
-			});
-		};
-
-		$scope.$watch("activeScenario", function () {
-			bindPlace(feature);
+		$firebaseObject(ref).$bindTo($scope, "place").then(function(unbind) {
+			$scope.unbind = unbind;
 		});
-
-		bindPlace(feature);
 	};
 
 	featureLayer.on('click', function(e) {
@@ -228,14 +219,21 @@ app.controller("placeCtrl", function($scope, $firebaseObject) {
 		});
 	});
 
-	map.on('click', function (e) {
-
+	var hidePlace = function () {
 		if($scope.activeLayer) $scope.activeLayer.setStyle(defaultStyle);
 		disableHighlight = false;
 		$scope.activeLayer = undefined;
 
-		$scope.$apply(function () {
+		$rootScope.safeApply(function () {
 			$scope.$parent.showPlace = false;
 		});
+	}
+
+	map.on('click', function (e) {
+		hidePlace();
+	});
+
+	$rootScope.$watch("activeScenario", function () {
+		hidePlace();
 	});
 });

@@ -83,7 +83,7 @@ config = {
 	mergeGeojsonFirebase: function(features, db) {
 
 		if(!features) return;
-		
+
 		var features = JSON.parse(JSON.stringify(features));
 
 		return _.map(features, function (f) {
@@ -98,10 +98,10 @@ config = {
 	// really needs to be done once, although I guess you can do it
 	// multiple times when debugging to reset to the initial state
 
-	initializeData: function (features) {
+	initializeData: function (features, url) {
 
 		_.each(features, function (feature) {
-			var ref = new Firebase(FIREBASE_URL).child("places").child(feature.properties.parcel_id);
+			var ref = new Firebase(url).child("places").child(feature.properties.parcel_id);
 
 			[
 				{key: "residentialUnits", prop: "total_residential_units"},
