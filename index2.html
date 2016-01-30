@@ -8,30 +8,9 @@
 
 <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
-<script src='https://api.mapbox.com/mapbox.js/v2.2.4/mapbox.js'></script>
 <link href='https://api.mapbox.com/mapbox.js/v2.2.4/mapbox.css' rel='stylesheet' />
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.13/d3.min.js"></script>
-
 <link href="https://bootswatch.com/cosmo/bootstrap.min.css" rel="stylesheet"/>
-
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular-animate.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.1.1/ui-bootstrap.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/api-check/7.5.5/api-check.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-formly/7.5.0/formly.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-formly-templates-bootstrap/6.2.0/angular-formly-templates-bootstrap.min.js"></script>
-
-<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
-<script src="https://cdn.firebase.com/libs/angularfire/1.1.3/angularfire.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/1.5.3/numeral.min.js"></script>
-
-<script src="dist/angular-numeral.js"></script>
-<script src="js/config.js"></script>
 
 <style>
 	body { margin:0; padding:0; }
@@ -80,124 +59,29 @@
     </div>
 </div>
 
-<script>
+<script src='https://api.mapbox.com/mapbox.js/v2.2.4/mapbox.js'></script>
 
-L.mapbox.accessToken = config.mapboxToken;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.13/d3.min.js"></script>
 
-var map = L.mapbox.map('map', config.baseMap, {zoomControl: false})
-    .setView(config.center, config.zoom);
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.6/angular-animate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.1.1/ui-bootstrap.min.js"></script>
 
-var defaultStyle = config.defaultStyle;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/api-check/7.5.5/api-check.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-formly/7.5.0/formly.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-formly-templates-bootstrap/6.2.0/angular-formly-templates-bootstrap.min.js"></script>
 
-var highlightStyle = config.highlightStyle;
+<script src="https://cdn.firebase.com/js/client/2.2.4/firebase.js"></script>
+<script src="https://cdn.firebase.com/libs/angularfire/1.1.3/angularfire.min.js"></script>
 
-var featureLayer = L.mapbox.featureLayer().addTo(map);
-var disableHighlight = false;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 
-var FIREBASE_URL = config.firebaseUrl + "/" + config.defaultScenario;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/1.5.3/numeral.min.js"></script>
 
-var app = angular.module("app", ["firebase", "ui.bootstrap", "formly", "formlyBootstrap", "ngNumeraljs"]);
+<script src="dist/angular-numeral.js"></script>
+<script src="js/config.js"></script>
 
-app.run(function($rootScope) {
+<script src="js/app.js"></script>
 
-	// global configuration
-
-    d3.json(config.shpsfile, function(error, shapes) {
-
-    	// read a geojson file - I'm sure there's lots of places for
-    	// shapes to come from but this is a common one
-
-    	$rootScope.$apply(function () {
-    		$rootScope.features = shapes.features;
-    	});
-
-		featureLayer.setGeoJSON(shapes);
-
-		featureLayer.eachLayer(function (layer) {
-
-			layer.setStyle(defaultStyle);
-
-			layer.on("mouseover", function (e) {
-				if(disableHighlight) return;
-		        	layer.setStyle(highlightStyle);
-			});
-
-			layer.on("mouseout", function (e) {
-		    		if(disableHighlight) return;
-		        	layer.setStyle(defaultStyle);
-			});
-		});
-    });
-});
-
-
-app.controller("mainCtrl", function($scope, $firebaseObject) {
-
-	// root controller for the whole app
-
-	$scope.showToolbar = true;
-	$scope.showPlace = false;
-});
-
-
-app.controller("analyticsCtrl", function($scope, $rootScope) {
-
-	// controller for the analytics window
-
-	$rootScope.$watch("features", function (features) {
-		$scope.analytics = config.runAnalytics(features);
-	});
-});
-
-
-app.controller("placeCtrl", function($scope, $firebaseObject) {
-
-	// controller for the place description window
-
-	$scope.placeFields = config.placeForm();
-
-	$scope.activatePlace = function (feature) {
-
-		$scope.$parent.showToolbar = true;
-		$scope.$parent.showPlace = true;
-		$scope.feature = feature;
-		$scope.place = {};
-
-		var ref = new Firebase(FIREBASE_URL).child("places").child(feature.properties.parcel_id);
-
-		if($scope.unbind) {
-			$scope.unbind();
-		}
-
-		$firebaseObject(ref).$bindTo($scope, "place").then(function(unbind) {
-			$scope.unbind = unbind;
-		});
-	};
-
-	featureLayer.on('click', function(e) {
-
-		if($scope.activeLayer) $scope.activeLayer.setStyle(defaultStyle);
-		$scope.activeLayer = e.layer;
-		disableHighlight = true;
-		e.layer.setStyle(highlightStyle);
-
-		$scope.$apply(function () {
-			$scope.activatePlace(e.layer.feature);
-		});
-	});
-
-	map.on('click', function (e) {
-
-		if($scope.activeLayer) $scope.activeLayer.setStyle(defaultStyle);
-		disableHighlight = false;
-		$scope.activeLayer = undefined;
-
-		$scope.$apply(function () {
-			$scope.$parent.showPlace = false;
-		});
-	});
-});
-
-</script>
 </body>
 </html>
