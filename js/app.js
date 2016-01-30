@@ -15,6 +15,20 @@ var FIREBASE_URL = config.firebaseUrl + "/" + config.defaultScenario;
 var app = angular.module("app", ["firebase", "ui.bootstrap", "formly", "formlyBootstrap", "ngNumeraljs"]);
 
 
+app.filter('inThousands', function() {
+    return function(input) {
+        return input / 1000;
+    };
+});
+
+
+app.filter('inMillions', function() {
+    return function(input) {
+        return input / 1000000;
+    };
+});
+
+
 app.run(function($rootScope) {
 
 	// global configuration

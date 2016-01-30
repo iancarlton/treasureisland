@@ -33,7 +33,9 @@ config = {
 
 		[
 			{key: "residentialUnits", label: "Residential Units"},
-			{key: "nonResidentialSqft", label: "Non-residential Sqft"}
+			{key: "nonResidentialSqft", label: "Non-residential Sqft"},
+			{key: "maxDua", label: "Max DUA"},
+			{key: "maxFar", label: "Max FAR"}
 			
 		].forEach(function (obj) {
 
@@ -53,6 +55,12 @@ config = {
 	runAnalytics: function (features, callback) {
 
 		var v = {
+			"raw_residential_capacity": d3.sum(features, function (v) {
+				return v.properties.maxDua * v.properties.parcelAcres;
+			}),
+			"raw_non_residential_capacity": d3.sum(features, function (v) {
+				return v.properties.maxFar * v.properties.parcelAcres * 43560;
+			}),
 			"total_residential_units": d3.sum(features, function (v) {
 				return v.properties.residentialUnits;
 			}),
