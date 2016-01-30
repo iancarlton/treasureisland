@@ -19,8 +19,9 @@
                         Scenarios <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a ng-click="open()">New</a></li>
-                        <li><a>Copy</a></li>
+                        <li><a ng-click="open('New')">New</a></li>
+                        <li><a ng-click="open('Copy')">Copy</a></li>
+                        <li ng-show="notBaseline()"><a ng-click="delete()">Delete</a></li>
                         <li role="separator" class="divider"></li>
                         <li ng-repeat="scenario in scenarios"><a ng-click="setActive(scenario)">{{scenario.name}}</a></li>
                     </ul>
@@ -32,7 +33,7 @@
         </nav>
         <nav class="visible-xs" uib-collapse="!isCollapsed">
             <ul class="nav navbar-nav">
-                <li><a ng-click="isCollapsed = !isCollapsed">Open</a></li>
+                <li><a ng-click="isCollapsed = !isCollapsed">Mobile not implemented</a></li>
             </ul>
         </nav>
     </div>
@@ -41,13 +42,13 @@
 
 <script type="text/ng-template" id="scenarioPickerModal.html">
     <div class="modal-header">
-        <h3 class="modal-title">New Scenario</h3>
+        <h3 class="modal-title">{{mode}} Scenario</h3>
     </div>
     <div class="modal-body">
         <input type="text" class="form-control" ng-model="name">
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary" type="button" ng-click="ok()">New</button>
+        <button class="btn btn-primary" type="button" ng-click="ok()">{{mode}}</button>
         <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
     </div>
 </script>

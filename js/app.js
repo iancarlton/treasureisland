@@ -64,8 +64,8 @@ app.run(function($rootScope, $firebaseArray) {
 		}
 	};
 
-	$rootScope.firebaseUrl = function () {
-		return config.firebaseUrl + "/" + $rootScope.activeScenario;
+	$rootScope.firebaseUrl = function (scenario) {
+		return config.firebaseUrl + "/" + (scenario || $rootScope.activeScenario);
 	};
 
 	var ref = new Firebase(config.firebaseUrl).child("scenarios");
@@ -122,6 +122,19 @@ app.controller("navbarCtrl", function ($scope, $rootScope, $firebaseObject, $uib
 		$rootScope.activeScenario = scenario.$id;
 	};
 
+	$scope.notBaseline = function () {
+		return $scope.activeScenario != config.defaultScenario;
+	};
+
+	$scope.delete = function () {
+		var rec = $scope.scenarios.$getRecord($scope.activeScenario);
+		$rootScope.scenarios.$remove(rec);
+		new Firebase($rootScope.firebaseUrl()).remove();
+		$rootScope.safeApply(function () {
+			$rootScope.activeScenario = config.defaultScenario;
+		});
+	};
+
 	$scope.open = function (mode) {
 
 		$uibModal.open({
@@ -129,11 +142,29 @@ app.controller("navbarCtrl", function ($scope, $rootScope, $firebaseObject, $uib
 			controller: 'scenarioPickerModalCtrl',
 			size: "sm",
 			resolve: {
-				mode: function () { mode || "new" }
+				mode: function () { return mode || "New" }
 			}
-		}).result.then(function (name) {
-			$rootScope.scenarios.$add({ name: name }).then(function(ref) {
-				$rootScope.activeScenario = ref.key();
+		}).result.then(function (obj) {
+
+			$rootScope.scenarios.$add({ name: obj.name }).then(function(ref) {
+				if(obj.mode == "Copy") {
+
+					var oldRef = new Firebase($rootScope.firebaseUrl()),
+					    newRef = new Firebase($rootScope.firebaseUrl(ref.key()));
+
+					oldRef.once('value', function(v)  {
+          				newRef.set(v.val(), function () {
+          					$rootScope.safeApply(function () {
+          						$rootScope.activeScenario = ref.key();
+          					});
+          				});
+          			});
+
+				} else {
+					$rootScope.safeApply(function () {
+						$rootScope.activeScenario = ref.key();
+					});
+				}
 			});
 		});
 	};
@@ -142,8 +173,10 @@ app.controller("navbarCtrl", function ($scope, $rootScope, $firebaseObject, $uib
 
 app.controller('scenarioPickerModalCtrl', function ($scope, $uibModalInstance, mode) {
 
+	$scope.mode = mode;
+
 	$scope.ok = function () {
-		$uibModalInstance.close($scope.name);
+		$uibModalInstance.close({name: $scope.name, mode: $scope.mode});
 	};
 
 	$scope.cancel = function () {
