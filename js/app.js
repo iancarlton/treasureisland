@@ -28,6 +28,10 @@ app.run(function($rootScope) {
     	$rootScope.features = shapes.features;
     	$rootScope.$broadcast('dataUpdated');
 
+    	// move data to firebase
+    	// this overwrites ALL firebase data!
+    	// config.initializeData(shapes.features);
+
 		featureLayer.setGeoJSON(shapes);
 
 		featureLayer.eachLayer(function (layer) {
