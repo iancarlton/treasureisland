@@ -203,6 +203,10 @@ app.controller("analyticsCtrl", function($scope, $rootScope) {
 	$scope.selectedTheme = "Default";
 	$scope.themes = _.keys(config.themes);
 
+	$rootScope.$watch("activeScenario", function () {
+		$scope.switchTheme($scope.selectedTheme);
+	});
+
 	$scope.switchTheme = function (t) {
 
 		if(t == "Default") {
@@ -210,7 +214,6 @@ app.controller("analyticsCtrl", function($scope, $rootScope) {
 			highlightStyle.fillColor = config.highlightStyle.fillColor;
 			highlightStyle.color = config.highlightStyle.color;
 
-			console.log(config.highlightStyle, highlightStyle);
 			featureLayer.eachLayer(function (layer) {
 				layer.style = undefined;
 				layer.setStyle(config.defaultStyle);
@@ -223,7 +226,8 @@ app.controller("analyticsCtrl", function($scope, $rootScope) {
 		var getAttr = function (layer, attr) {
 			var key = layer.feature.properties[config.keyAttr];
 			var rec = $rootScope.db[key];
-			return rec[attr];
+			if(!rec) return undefined;
+			return +rec[attr];
 		}
 
 		var vals = [];
@@ -263,6 +267,8 @@ app.controller("analyticsCtrl", function($scope, $rootScope) {
 
 		if(!features) return;
 
+		$scope.switchTheme($scope.selectedTheme);
+
 		var v = throttledAnalytics(features, function (v) {
 			$rootScope.safeApply(function () {
 
@@ -298,7 +304,9 @@ app.controller("placeCtrl", function($scope, $rootScope, $firebaseObject) {
 
 	featureLayer.on('click', function(e) {
 
-		if($scope.activeLayer) $scope.activeLayer.setStyle(defaultStyle);
+		if($scope.activeLayer) $scope.activeLayer.setStyle(
+			$scope.activeLayer.style || defaultStyle);
+
 		$scope.activeLayer = e.layer;
 		disableHighlight = true;
 		e.layer.setStyle(highlightStyle);
