@@ -13,19 +13,19 @@
 <link href="https://bootswatch.com/cosmo/bootstrap.min.css" rel="stylesheet"/>
 
 <style>
-	body { margin:0; padding:0; }
-	#map { position:absolute; left: 0; top:0; bottom:0; width:100%; }
+    body { margin:0; padding:0; }
+    #map { position:absolute; left: 0; top:0; bottom:0; width:100%; }
 
-	#toolbar {
-	    position: absolute;
-	    top: 60px;
-	    right: 10px;
-	    bottom: 30px;
-	    width: 400px;
-	    overflow: auto;
-	    background: rgba(255, 255, 255, 0.9);
-	    border-radius: 6px;
-	}
+    #toolbar {
+        position: absolute;
+        top: 60px;
+        right: 10px;
+        bottom: 30px;
+        width: 400px;
+        overflow: auto;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 6px;
+    }
 </style>
 
 </head>
@@ -37,33 +37,33 @@
 <div class="container-fluid">
     <div class="row-fluid">
 
-    	<!-- set up the map and toolbar -->
+        <!-- set up the map and toolbar -->
 
         <div id='map'></div>
 
         <div id="toolbar" ng-show="showToolbar">
             <div style="margin: 15px; margin-top: 15px;">
 
-            	<div ng-show="showPlace" ng-controller="placeCtrl">
+                <div ng-show="showPlace" ng-controller="placeCtrl">
 
-	            	<div ng-include="'views/place.html'"></div>
-					<formly-form model="place" fields="placeFields"/>
+                    <div ng-include="'views/place.html'"></div>
+                    <formly-form model="place" fields="placeFields"/>
 
                 </div>
 
                 <div ng-hide="showPlace" ng-controller="analyticsCtrl">
-                	<div ng-include="'views/analytics.html'"></div>
-                	
-                	<div ng-show="themes">
-                		<br>
-				<div class=form-group>
-					<label>Select theme:</label>
-                			<select class="form-control" ng-model="selectedTheme" ng-change="switchTheme(selectedTheme)">
-                				<option>Default</option>
-						<option ng-repeat="theme in themes">{{theme}}</option>
-					</select>
-				</div>
-                	</div>
+                    <div ng-include="'views/analytics.html'"></div>
+                    
+                    <div ng-show="themes">
+                        <br>
+                <div class=form-group>
+                    <label>Select theme:</label>
+                            <select class="form-control" ng-model="selectedTheme" ng-change="switchTheme(selectedTheme)">
+                                <option>Default</option>
+                        <option ng-repeat="theme in themes">{{theme}}</option>
+                    </select>
+                </div>
+                    </div>
                 </div>
 
             </div>
