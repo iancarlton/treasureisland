@@ -10,7 +10,8 @@ var highlightStyle = _.clone(config.highlightStyle);
 var featureLayer = L.mapbox.featureLayer().addTo(map);
 var disableHighlight = false;
 
-var app = angular.module("app", ["firebase", "ui.bootstrap", "formly", "formlyBootstrap", "ngNumeraljs"]);
+var app = angular.module("app", ["firebase", "ui.bootstrap", "formly",
+	"formlyBootstrap", "ngNumeraljs", "toastr"]);
 
 
 app.filter('inThousands', function() {
@@ -24,6 +25,13 @@ app.filter('inMillions', function() {
     return function(input) {
         return input / 1000000;
     };
+});
+
+
+app.config(function(toastrConfig) {
+  angular.extend(toastrConfig, {
+    positionClass: 'toast-bottom-left'
+  });
 });
 
 
@@ -68,6 +76,34 @@ app.run(function($rootScope, $firebaseArray) {
 		return config.firebaseUrl + "/" + (scenario || $rootScope.activeScenario);
 	};
 
+	$rootScope.keydown = function (key) {
+	    $rootScope.keyDown = key.code;
+	    $rootScope.maybePaint($rootScope.hoverFeature);
+	};
+
+	$rootScope.keyup = function (key) {
+	    $rootScope.keyDown = undefined;
+	};
+
+	$rootScope.maybePaint = function (feature) {
+		
+		var pc = $rootScope.paintConfiguration;
+		if(!pc) return false;
+		if(!feature) return false;
+		if($rootScope.keyDown != "Space") return false;
+
+		var ref = new Firebase($rootScope.firebaseUrl()).child("places").child(feature.properties.parcel_id);
+
+		if(pc.mode == "set") {
+			ref.child(pc.attr).set(pc.amount);
+		} else {
+			var amt = pc.mode == "add" ? pc.amount : -1 * pc.amount;
+			ref.child(pc.attr).transaction(function (current_value) {
+				return (current_value || 0) + amt;
+			});
+		}
+	};
+
 	var ref = new Firebase(config.firebaseUrl).child("scenarios");
 	$rootScope.scenarios = $firebaseArray(ref);
 	$rootScope.activeScenario = config.defaultScenario;
@@ -98,11 +134,22 @@ app.run(function($rootScope, $firebaseArray) {
 			layer.setStyle(defaultStyle);
 
 			layer.on("mouseover", function (e) {
+
+				$rootScope.hoverFeature = layer.feature;
+
 				if(disableHighlight) return;
-		        layer.setStyle(highlightStyle);
+				if($rootScope.paintConfiguration) {
+					if(!$rootScope.maybePaint(layer.feature)) {
+						layer.setStyle(highlightStyle);
+					}
+				} else {
+					layer.setStyle(highlightStyle);
+				}
 			});
 
 			layer.on("mouseout", function (e) {
+
+				$rootScope.hoverFeature = undefined;
 		    	if(disableHighlight) return;
 		        layer.setStyle(layer.style || defaultStyle);
 			});
@@ -111,7 +158,8 @@ app.run(function($rootScope, $firebaseArray) {
 });
 
 
-app.controller("navbarCtrl", function ($scope, $rootScope, $firebaseObject, $uibModal) {
+app.controller("navbarCtrl", function ($scope, $rootScope, $firebaseObject, $uibModal,
+	toastr) {
 
 	$scope.activeScenarioName = function () {
 		var rec = $scope.scenarios.$getRecord($scope.activeScenario);
@@ -193,7 +241,8 @@ app.controller("navbarCtrl", function ($scope, $rootScope, $firebaseObject, $uib
 				initialValue: function () {
 					return {
 						attr: defaultAttr,
-						mode: "set"
+						mode: "set",
+						amount: 10
 					}
 				},
 				form: function () {
@@ -220,11 +269,19 @@ app.controller("navbarCtrl", function ($scope, $rootScope, $firebaseObject, $uib
 								value: "subtract"
 							}]
 						}
+					}, {
+						key: "amount",
+						type: "input",
+						templateOptions: {
+							type: "number",
+							label: "Amount"
+						}
 					}]
 				}
 			}
 		}).result.then(function (obj) {
-			console.log(obj);
+			$rootScope.paintConfiguration = obj;
+			toastr.success('Use space bar to paint attribute to parcel!', 'Paint configured');
 		});
 	};
 });
@@ -237,10 +294,8 @@ app.controller('genericModalCtrl', function ($scope,
 	$scope.submitText = submitText;
 	$scope.intputConfig = form;
 	$scope.inputs = initialValue;
-	console.log($scope.inputs);
 
 	$scope.ok = function () {
-		console.log($scope.intput);
 		$uibModalInstance.close($scope.inputs);
 	};
 
