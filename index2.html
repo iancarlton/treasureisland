@@ -57,11 +57,11 @@
                 	<div ng-show="themes">
                 		<br>
 				<div class=form-group>
+					<label>Select theme:</label>
                 			<select class="form-control" ng-model="selectedTheme" ng-change="switchTheme(selectedTheme)">
                 				<option>Default</option>
 						<option ng-repeat="theme in themes">{{theme}}</option>
 					</select>
-					<label>Select theme:</label>
 				</div>
                 	</div>
                 </div>
