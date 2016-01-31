@@ -51,7 +51,17 @@
 
                 </div>
 
-                <div ng-hide="showPlace" ng-controller="analyticsCtrl" ng-include="'views/analytics.html'"></div>
+                <div ng-hide="showPlace" ng-controller="analyticsCtrl">
+                	<div ng-include="'views/analytics.html'"></div>
+                	
+                	<div ng-show="themes">
+                		<br>
+                		<select class="form-control" ng-model="selectedTheme" ng-change="switchTheme(selectedTheme)">
+                			<option>Default</option>
+							<option ng-repeat="theme in themes">{{theme}}</option>
+						</select>
+                	</div>
+                </div>
 
             </div>
         </div>

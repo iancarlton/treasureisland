@@ -6,10 +6,12 @@ config = {
 
 	firebaseUrl: "https://treasureisland.firebaseio.com",
 
-	center: [37.823512, -122.370358],
+	center: [37.823512, -122.368358],
 	zoom: 16,
 	shpsfile: "ti.geojson",
 	baseMap: "fscottfoti.kaeo1aml",
+
+	keyAttr: "parcel_id",
 
 	defaultStyle: {
 	    color: "#2262CC",
@@ -25,6 +27,37 @@ config = {
 	    opacity: 0.6,
 	    fillOpacity: 0.65,
 	    fillColor: '#2262CC'
+	},
+
+	themes: {
+		"Max Dua": {
+			attr: "maxDua",
+			opacity: .9,
+			outlineColor: "#000000",
+			highlightColor: '#ffffcc',
+			interpolate: ["#fff5eb", "#7f2704"]
+		},
+		"Max Far": {
+			attr: "maxFar",
+			opacity: .9,
+			outlineColor: "#000000",
+			highlightColor: "#ffb3ff",
+			interpolate: ["#f7fbff", "#08306b"]
+		},
+		"Residential Units": {
+			attr: "residentialUnits",
+			opacity: .9,
+			outlineColor: "#000000",
+			highlightColor: '#ffffcc',
+			interpolate: ["#fff7ec", "#7f0000"]
+		},
+		"Non-residential Sqft": {
+			attr: "nonResidentialSqft",
+			opacity: .9,
+			outlineColor: "#000000",
+			highlightColor: "#ffb3ff",
+			interpolate: ["#fff7fb", "#023858"]
+		}
 	},
 
 	placeForm: function () {

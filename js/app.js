@@ -5,7 +5,7 @@ var map = L.mapbox.map('map', config.baseMap, {zoomControl: false})
 
 var defaultStyle = config.defaultStyle;
 
-var highlightStyle = config.highlightStyle;
+var highlightStyle = _.clone(config.highlightStyle);
 
 var featureLayer = L.mapbox.featureLayer().addTo(map);
 var disableHighlight = false;
@@ -99,12 +99,12 @@ app.run(function($rootScope, $firebaseArray) {
 
 			layer.on("mouseover", function (e) {
 				if(disableHighlight) return;
-		        	layer.setStyle(highlightStyle);
+		        layer.setStyle(highlightStyle);
 			});
 
 			layer.on("mouseout", function (e) {
-		    		if(disableHighlight) return;
-		        	layer.setStyle(defaultStyle);
+		    	if(disableHighlight) return;
+		        layer.setStyle(layer.style || defaultStyle);
 			});
 		});
     });
@@ -200,6 +200,62 @@ app.controller("analyticsCtrl", function($scope, $rootScope) {
 
 	// controller for the analytics window
 
+	$scope.selectedTheme = "Default";
+	$scope.themes = _.keys(config.themes);
+
+	$scope.switchTheme = function (t) {
+
+		if(t == "Default") {
+
+			highlightStyle.fillColor = config.highlightStyle.fillColor;
+			highlightStyle.color = config.highlightStyle.color;
+
+			console.log(config.highlightStyle, highlightStyle);
+			featureLayer.eachLayer(function (layer) {
+				layer.style = undefined;
+				layer.setStyle(config.defaultStyle);
+			});
+			return;
+		}
+
+		t = config.themes[t];
+
+		var getAttr = function (layer, attr) {
+			var key = layer.feature.properties[config.keyAttr];
+			var rec = $rootScope.db[key];
+			return rec[attr];
+		}
+
+		var vals = [];
+		featureLayer.eachLayer(function (layer) {
+			vals.push(getAttr(layer, t.attr));
+		});
+
+		var scale = d3.scale.linear()
+			.domain(d3.extent(vals))
+			.interpolate(d3.interpolateRgb)
+			.range(t.interpolate)
+
+		featureLayer.eachLayer(function (layer) {
+
+			var v = getAttr(layer, t.attr);
+			var style = {
+				fillColor: scale(v)
+			};
+
+			if(t.opacity) style.fillOpacity = t.opacity;
+			if(!v) style.fillOpacity = 0;
+			if(t.outlineColor) {
+				style.color = t.outlineColor;
+				highlightStyle.color = t.outlineColor;
+			}
+			if(t.highlightColor) highlightStyle.fillColor = t.highlightColor;
+
+			layer.style = style;
+			layer.setStyle(style);
+		});
+	};
+
 	$rootScope.$on("dataUpdated", function (features) {
 
 		var features = config.mergeGeojsonFirebase(
@@ -253,7 +309,10 @@ app.controller("placeCtrl", function($scope, $rootScope, $firebaseObject) {
 	});
 
 	var hidePlace = function () {
-		if($scope.activeLayer) $scope.activeLayer.setStyle(defaultStyle);
+
+		if($scope.activeLayer) $scope.activeLayer.setStyle(
+			$scope.activeLayer.style || defaultStyle);
+
 		disableHighlight = false;
 		$scope.activeLayer = undefined;
 
