@@ -168,6 +168,85 @@ app.controller("navbarCtrl", function ($scope, $rootScope, $firebaseObject, $uib
 			});
 		});
 	};
+
+	$scope.paint = function (mode) {
+
+		var attrs = _.map(config.editableAttributes(), function (obj) {
+			return {
+				name: obj.label,
+				value: obj.key
+			}
+		});
+		var defaultAttr = config.editableAttributes()[0].key;
+
+		$uibModal.open({
+			templateUrl: 'genericModal.html',
+			controller: 'genericModalCtrl',
+			size: "sm",
+			resolve: {
+				title: function () { 
+					return "Paint Attribute Config";
+				},
+				submitText: function () {
+					return "Configure";
+				},
+				initialValue: function () {
+					return {
+						attr: defaultAttr,
+						mode: "set"
+					}
+				},
+				form: function () {
+					return [{
+						key: "attr",
+					    type: "select",
+    					templateOptions: {
+							label: "Pick Attribute",
+							options: attrs
+						},
+					}, {
+						key: "mode",
+					    type: "select",
+    					templateOptions: {
+							label: "Paint Mode",
+							options: [{
+								name: "Set",
+								value: "set"
+							}, {
+								name: "Add",
+								value: "add"
+							}, {
+								name: "Subtract",
+								value: "subtract"
+							}]
+						}
+					}]
+				}
+			}
+		}).result.then(function (obj) {
+			console.log(obj);
+		});
+	};
+});
+
+
+app.controller('genericModalCtrl', function ($scope,
+	$uibModalInstance, title, submitText, form, initialValue) {
+
+	$scope.title = title;
+	$scope.submitText = submitText;
+	$scope.intputConfig = form;
+	$scope.inputs = initialValue;
+	console.log($scope.inputs);
+
+	$scope.ok = function () {
+		console.log($scope.intput);
+		$uibModalInstance.close($scope.inputs);
+	};
+
+	$scope.cancel = function () {
+		$uibModalInstance.dismiss();
+	};
 });
 
 

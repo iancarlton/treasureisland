@@ -26,6 +26,14 @@
                         <li ng-repeat="scenario in scenarios"><a ng-click="setActive(scenario)">{{scenario.name}}</a></li>
                     </ul>
                 </li>
+                <li class="dropdown" uib-dropdown>
+                    <a role="button" class="dropdown-toggle" uib-dropdown-toggle>
+                        Actions <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a ng-click="paint()">Paint</a></li>
+                    </ul>
+                </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
 				<li><a href="http://mapcraft.io" target="_blank">Built by MapCraft</a></li>
@@ -49,6 +57,20 @@
     </div>
     <div class="modal-footer">
         <button class="btn btn-primary" type="button" ng-click="ok()">{{mode}}</button>
+        <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+    </div>
+</script>
+
+
+<script type="text/ng-template" id="genericModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title">{{title}}</h3>
+    </div>
+    <div class="modal-body">
+        <formly-form model="inputs" fields="intputConfig"/>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary" type="button" ng-click="ok()">{{submitText}}</button>
         <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
     </div>
 </script>

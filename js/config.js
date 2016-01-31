@@ -60,18 +60,20 @@ config = {
 		}
 	},
 
-	placeForm: function () {
-
-		var placeFields = [];
-
-		[
+	editableAttributes: function () {
+		return 	[
 			{key: "residentialUnits", label: "Residential Units"},
 			{key: "nonResidentialSqft", label: "Non-residential Sqft"},
 			{key: "maxDua", label: "Max DUA"},
 			{key: "maxFar", label: "Max FAR"}
-			
-		].forEach(function (obj) {
+		]
+	},
 
+	placeForm: function () {
+
+		var placeFields = [];
+
+		this.editableAttributes().forEach(function (obj) {
     		placeFields.push({
 				key: obj.key,
 				type: 'input',
