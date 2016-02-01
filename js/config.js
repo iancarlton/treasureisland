@@ -111,6 +111,12 @@ config = {
         callback(v);
     },
 
+    mergeFeatureAndRec: function (f, db) {
+        f = JSON.parse(JSON.stringify(f));
+        _.extend(f["properties"], db[f.properties[config.keyAttr]]);
+        return f;
+    },
+
     // this is a rather odd but important function which merged the "base"
     // data which comes out of the geojson with the override attribute
     // data which comes out of firebase
@@ -123,7 +129,7 @@ config = {
 
         return _.map(features, function (f) {
 
-            _.extend(f["properties"], db[f.properties.parcel_id]);
+            _.extend(f["properties"], db[f.properties[config.keyAttr]]);
             return f;
 
         });

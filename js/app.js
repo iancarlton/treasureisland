@@ -92,7 +92,7 @@ app.run(function($rootScope, $firebaseArray) {
         if(!feature) return false;
         if($rootScope.keyDown != "Space") return false;
 
-        var ref = new Firebase($rootScope.firebaseUrl()).child("places").child(feature.properties.parcel_id);
+        var ref = new Firebase($rootScope.firebaseUrl()).child("places").child(feature.properties[config.keyAttr]);
 
         if(pc.mode == "set") {
             ref.child(pc.attr).set(pc.amount);
@@ -135,9 +135,16 @@ app.run(function($rootScope, $firebaseArray) {
 
             layer.on("mouseover", function (e) {
 
-                $rootScope.hoverFeature = layer.feature;
+                $rootScope.safeApply(function () {
+                    // set to root scope the current shape
+                    // being hovered over
+                    $rootScope.hoverFeature = 
+                        config.mergeFeatureAndRec(
+                            layer.feature, $rootScope.db);
+                });
 
                 if(disableHighlight) return;
+
                 if($rootScope.paintConfiguration) {
                     if(!$rootScope.maybePaint(layer.feature)) {
                         layer.setStyle(highlightStyle);
@@ -149,7 +156,10 @@ app.run(function($rootScope, $firebaseArray) {
 
             layer.on("mouseout", function (e) {
 
-                $rootScope.hoverFeature = undefined;
+                $rootScope.safeApply(function () {
+                    $rootScope.hoverFeature = undefined;
+                });
+
                 if(disableHighlight) return;
                 layer.setStyle(layer.style || defaultStyle);
             });
@@ -425,7 +435,7 @@ app.controller("placeCtrl", function($scope, $rootScope, $firebaseObject) {
         $scope.$parent.showPlace = true;
         $scope.feature = feature;
 
-        var ref = new Firebase($scope.firebaseUrl()).child("places").child(feature.properties.parcel_id);
+        var ref = new Firebase($scope.firebaseUrl()).child("places").child(feature.properties[config.keyAttr]);
 
         if($scope.unbind) {
             $scope.unbind();
