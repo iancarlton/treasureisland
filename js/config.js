@@ -8,7 +8,7 @@ config = {
 
     center: [37.823512, -122.368358],
     zoom: 16,
-    shpsfile: "ti.geojson",
+    shpsfile: "ti.geojson.gz",
     baseMap: "fscottfoti.kaeo1aml",
 
     keyAttr: "parcel_id",
