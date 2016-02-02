@@ -12,6 +12,8 @@
 
 <link href="https://bootswatch.com/cosmo/bootstrap.min.css" rel="stylesheet"/>
 
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet">
+
 <style>
     body { margin:0; padding:0; }
     #map { position:absolute; left: 0; top:0; bottom:0; width:100%; }
@@ -48,7 +50,8 @@
 
                     <div ng-include="'views/place.html'"></div>
                     <formly-form model="place" fields="placeFields"/>
-
+                    <div ng-include="'views/comments.html'"></div>
+                    
                 </div>
 
                 <div ng-hide="showPlace" ng-controller="analyticsCtrl">
@@ -92,7 +95,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/1.5.3/numeral.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/moment.min.js"></script>
 
+<script src="dist/angular-moment.js"></script>
 <script src="dist/angular-numeral.js"></script>
 <script src="js/config.js"></script>
 

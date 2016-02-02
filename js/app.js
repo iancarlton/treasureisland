@@ -11,7 +11,7 @@ var featureLayer = L.mapbox.featureLayer().addTo(map);
 var disableHighlight = false;
 
 var app = angular.module("app", ["firebase", "ui.bootstrap", "formly",
-    "formlyBootstrap", "ngNumeraljs", "toastr"]);
+    "formlyBootstrap", "ngNumeraljs", "toastr", "angularMoment"]);
 
 
 app.filter('inThousands', function() {
@@ -433,8 +433,8 @@ app.controller("placeCtrl", function($scope, $rootScope, $firebaseObject) {
 
         $scope.$parent.showToolbar = true;
         $scope.$parent.showPlace = true;
-        $scope.feature = feature;
-
+        $rootScope.activePlace = $scope.feature = feature;   
+        
         var ref = new Firebase($scope.firebaseUrl()).child("places").child(feature.properties[config.keyAttr]);
 
         if($scope.unbind) {
@@ -480,4 +480,103 @@ app.controller("placeCtrl", function($scope, $rootScope, $firebaseObject) {
     $rootScope.$watch("activeScenario", function () {
         hidePlace();
     });
+});
+
+
+app.controller("commentCtrl", function($scope, $rootScope, 
+    $firebaseArray, toastr) {
+
+    $scope.comments = [];
+
+    $scope.comment = {
+        showMakeComment: false,
+        showMakeReply: false,
+        commentText: "",
+        heading: ""
+    };
+
+    $scope.commentRef = function () {
+
+        var featureId = $rootScope.activePlace.properties[config.keyAttr];
+        return new Firebase(config.firebaseUrl).child("comments").child(featureId);
+    }
+
+    $rootScope.$watch("activePlace", function (v) {
+
+        if(!v) return;
+
+        $scope.comments = $firebaseArray($scope.commentRef());
+    });
+
+    $scope.noComments = function () {
+        return $scope.comments.length == 0;
+    };
+
+    $scope.hideMakeComment = function () {
+        $scope.comment.showMakeComment = false;
+        $scope.comment.heading = "";
+        $scope.comment.commentText = "";
+    };
+
+    $scope.hideMakeReply = function () {
+        $scope.comment.showMakeReply = false;
+        $scope.comment.commentText = "";
+    };
+
+    $scope.divideDate = function (date) {
+        return date/1000;
+    };
+
+    $scope.setReply = function (id) {
+        $scope.replyId = id;
+        $scope.comment.showMakeReply = id;
+    }
+
+    $scope.lessThanADayAgo = function (unixDate) {
+        var now = moment(new Date());
+        var then = moment(unixDate);
+        var diff = now.diff(then, 'days')
+        return diff < 1;
+    };
+
+    $scope.makeReply = function () {
+
+        var commentText = $scope.comment.commentText;
+
+        if(!commentText) {
+            toastr.error("No comment text, can't submit comment");
+            return;
+        }
+
+        $scope.commentRef().child($scope.replyId).child("replies").push({
+            commentText: commentText,
+            date: Firebase.ServerValue.TIMESTAMP
+        });
+
+        $scope.hideMakeReply();
+    }
+
+    $scope.makeComment = function (heading, commentText) {
+
+        var heading = $scope.comment.heading;
+        var commentText = $scope.comment.commentText;
+
+        if(!heading) {
+            toastr.error("No heading, can't submit comment");
+            return;
+        }
+
+        if(!commentText) {
+            toastr.error("No comment text, can't submit comment");
+            return;
+        }
+
+        $scope.comments.$add({
+            heading: heading,
+            commentText: commentText,
+            date: Firebase.ServerValue.TIMESTAMP
+        });
+
+        $scope.hideMakeComment();
+    };
 });

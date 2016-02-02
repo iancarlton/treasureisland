@@ -1,0 +1,84 @@
+<div ng-controller="commentCtrl">
+
+    <hr>
+
+    <div ng-repeat="c in comments" class="media">
+        <a class="pull-left" href="#">
+            <img class="media-object" src="http://placehold.it/64x64" alt="">
+        </a>
+        <div class="media-body">
+            <h4 class="media-heading">{{c.heading}}
+
+                <small>
+                    <span ng-show="lessThanADayAgo(c.date)" am-time-ago="divideDate(c.date) | amFromUnix"></span>
+                    <span ng-hide="lessThanADayAgo(c.date)">{{divideDate(c.date) | amFromUnix | amDateFormat:'MMM Do, YYYY'}}</span>
+                </small>
+            </h4>
+
+            {{c.commentText}}
+            <!-- nested media -->
+            <div ng-repeat="c2 in c.replies" class="media">
+                <a class="pull-left" href="#">
+                    <img class="media-object" src="http://placehold.it/64x64" alt="">
+                </a>
+                <div class="media-body">
+                    <h4 class="media-heading">
+                        <small>
+                            <span ng-show="lessThanADayAgo(c.date)" am-time-ago="divideDate(c.date) | amFromUnix"></span>
+                            <span ng-hide="lessThanADayAgo(c.date)">{{divideDate(c.date) | amFromUnix | amDateFormat:'MMM Do, YYYY'}}</span>
+                        </small>
+                    </h4>
+                    {{c2.commentText}}
+                </div>
+            </div>
+            <div>
+                <a href="" ng-click="setReply(c.$id); comment.showMakeComment = false;" ng-hide="comment.showMakeReply == c.$id"><i class="fa fa-reply"></i> Reply</a>
+                <div style="margin-top: 15px;" ng-show="comment.showMakeReply == c.$id" ng-include="'makeReply.html'"></div>
+            </div>
+        </div>
+    </div>
+
+    <hr ng-hide="noComments()">
+
+    <div ng-show="comment.showMakeComment" ng-include="'makeComment.html'"></div>
+    <div ng-hide="comment.showMakeComment">
+        <a href="" ng-click="comment.showMakeReply = false; comment.showMakeComment=true"><i class="fa fa-plus-square-o fa-2x"> Add Comment</i></a>
+    </div>
+
+</div>
+
+<script type="text/ng-template" id="makeComment.html">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Leave a Comment</h3>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label>Heading</label>
+                <input type="text" ng-model="comment.heading" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Comment</label>
+                <textarea ng-model="comment.commentText" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" ng-click="makeComment()" class="btn btn-primary">Submit</button>
+            <button ng-click="hideMakeComment();" class="btn btn-primary">Cancel</button>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="makeReply.html">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Leave a Reply</h3>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label>Comment</label>
+                <textarea ng-model="comment.commentText" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" ng-click="makeReply()" class="btn btn-primary">Submit</button>
+            <button ng-click="hideMakeReply();" class="btn btn-primary">Cancel</button>
+        </div>
+    </div>
+</script>
