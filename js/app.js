@@ -104,6 +104,16 @@ app.run(function($rootScope, $firebaseArray) {
         }
     };
 
+    $rootScope.getFullFeatures = function(features, db) {
+
+        if(!features) return;
+
+        return _.map(features, function (f) {
+
+            return config.getFullFeature(f, db);
+        });
+    };
+
     var ref = new Firebase(config.firebaseUrl).child("scenarios");
     $rootScope.scenarios = $firebaseArray(ref);
     $rootScope.activeScenario = config.defaultScenario;
@@ -139,7 +149,7 @@ app.run(function($rootScope, $firebaseArray) {
                     // set to root scope the current shape
                     // being hovered over
                     $rootScope.hoverFeature = 
-                        config.mergeFeatureAndRec(
+                        config.getFullFeature(
                             layer.feature, $rootScope.db);
                 });
 
@@ -338,7 +348,7 @@ app.controller("mainCtrl", function($scope, $rootScope, $firebaseObject) {
 });
 
 
-var throttledAnalytics = _.throttle(config.runAnalytics, 500);
+var throttledAnalytics = _.throttle(config.aggregateAnalytics, 500);
 
 app.controller("analyticsCtrl", function($scope, $rootScope) {
 
@@ -406,7 +416,7 @@ app.controller("analyticsCtrl", function($scope, $rootScope) {
 
     $rootScope.$on("dataUpdated", function (features) {
 
-        var features = config.mergeGeojsonFirebase(
+        var features = $rootScope.getFullFeatures(
             $rootScope.features, $rootScope.db);
 
         if(!features) return;

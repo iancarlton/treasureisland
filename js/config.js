@@ -91,7 +91,40 @@ config = {
         return placeFields;
     },
 
-    runAnalytics: function (features, callback) {
+    aggregateAnalytics: function (features, callback) {
+        var v = {
+            "raw_residential_capacity": d3.sum(features, function (v) {
+                return v.properties.maxDua * v.properties.parcelAcres;
+            }),
+            "raw_non_residential_capacity": d3.sum(features, function (v) {
+                return v.properties.maxFar * v.properties.parcelAcres * 43560;
+            }),
+            "total_residential_units": d3.sum(features, function (v) {
+                return v.properties.unitsTotal;
+            }),
+            "total_affordable_units": d3.sum(features, function (v) {
+                return v.properties.unitsAff;
+            }),
+            "total_non_residential_sqft": d3.sum(features, function (v) {
+                return v.properties.commSqFt;
+            }),
+            "total_tif_capacity": d3.sum(features, function (v) {
+                return v.properties.tifCapacity;
+            }),
+            "total_residential_land": d3.sum(features, function (v) {
+                return v.properties.residualLand;
+            }),
+            "total_acres": d3.sum(features, function (v) {
+                return v.properties.parcelAcres;
+            })
+        };
+
+        // asynchronous
+        callback(v);
+    },
+
+    // add analytics for a single feature
+    runAnalytics(f) {
 
         // global assumptions, hard coded for now, but
         // will be entered by the user
@@ -112,68 +145,35 @@ config = {
             landPrep: 0
         };
 
-        var proFormas = _.map(features, function (f) {
-            var p = f.properties;
-            _.each(_.keys(defaults), function (prop) {
-                if(!p[prop]) p[prop] = defaults[prop];
-            });
-            if(!p.parcelSize) p.parcelSize = f.parcel_size;
-            return ROCpencil(p, globals);
+        var p = f.properties;
+
+        // set some default if they don't exist
+        _.each(_.keys(defaults), function (prop) {
+            if(!p[prop]) p[prop] = defaults[prop];
         });
+        if(!p.parcelSize) p.parcelSize = f.parcel_size;
 
-        var v = {
-            "raw_residential_capacity": d3.sum(features, function (v) {
-                return v.properties.maxDua * v.properties.parcelAcres;
-            }),
-            "raw_non_residential_capacity": d3.sum(features, function (v) {
-                return v.properties.maxFar * v.properties.parcelAcres * 43560;
-            }),
-            "total_residential_units": d3.sum(proFormas, function (pf) {
-                return pf.unitsTotal;
-            }),
-            "total_affordable_units": d3.sum(proFormas, function (pf) {
-                return pf.unitsAff;
-            }),
-            "total_non_residential_sqft": d3.sum(proFormas, function (pf) {
-                return pf.commSqFt;
-            }),
-            "total_tif_capacity": d3.sum(proFormas, function (pf) {
-                return pf.tifCapacity;
-            }),
-            "total_residential_land": d3.sum(proFormas, function (pf) {
-                return pf.residualLand;
-            }),
-            "total_acres": d3.sum(features, function (v) {
-                return v.properties.parcelAcres;
-            })
-        };
-
-        // asynchronous
-        callback(v);
-    },
-
-    mergeFeatureAndRec: function (f, db) {
-        f = JSON.parse(JSON.stringify(f));
-        _.extend(f["properties"], db[f.properties[config.keyAttr]]);
-        return f;
+        // do the pro forma
+        return ROCpencil(p, globals);
     },
 
     // this is a rather odd but important function which merged the "base"
     // data which comes out of the geojson with the override attribute
     // data which comes out of firebase
+    getFullFeature: function (f, db) {
+        // make a copy
+        f = JSON.parse(JSON.stringify(f));
 
-    mergeGeojsonFirebase: function(features, db) {
+        // return geojson feature if firebase object does not yet exist
+        var key = f.properties[config.keyAttr];
+        if(!db || !db[key]) return f;
 
-        if(!features) return;
+        // add firebase attributes to properties
+        _.extend(f.properties, db[key]);
+        // add analytic attribute under pf attribute
+        _.extend(f.properties, config.runAnalytics(f));
 
-        var features = JSON.parse(JSON.stringify(features));
-
-        return _.map(features, function (f) {
-
-            _.extend(f["properties"], db[f.properties[config.keyAttr]]);
-            return f;
-
-        });
+        return f;
     },
 
     // this method moves data from the geojson into firebase - this only
