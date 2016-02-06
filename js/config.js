@@ -98,22 +98,37 @@ config = {
         ]
     },
 
-    placeForm: function () {
+    globalAttributes: function () {
+        return [
+            {key: "constructCost", label: "Contruction Cost"},
+            {key: "softCost", label: "Soft Cost"},
+            {key: "capRate", label: "Cap Rate"},
+            {key: "goInCapSpread", label: "Cap Spread"},
+            {key: "inclusionary", label: "inclusionary"},
+            {key: "addordableDepth", label: "AffordableDepth"}
+        ]
+    },
 
-        var placeFields = [];
+    makeForm: function (fields) {
 
-        this.editableAttributes().forEach(function (obj) {
-            placeFields.push({
+        return _.map(fields, function (obj) {
+            return {
                 key: obj.key,
                 type: 'input',
                 templateOptions: {
                     type: 'text',
                     label: obj.label
                 }
-            });
+            };
         });
+    },
 
-        return placeFields;
+    placeForm: function () {
+        return config.makeForm(config.editableAttributes());
+    },
+
+    globalForm: function () {
+        return config.makeForm(config.globalAttributes());
     },
 
     aggregateAnalytics: function (features, callback) {

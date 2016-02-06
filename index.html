@@ -55,19 +55,38 @@
                 </div>
 
                 <div ng-hide="showPlace" ng-controller="analyticsCtrl">
-                    <div ng-include="'views/analytics.html'"></div>
-                    
-                    <div ng-show="themes">
-                        <div class=form-group>
-                            <label>Select theme:</label>
-                            <select class="form-control" ng-model="selectedTheme" ng-change="switchTheme(selectedTheme)">
-                                <option>Default</option>
-                                <option ng-repeat="theme in themes">{{theme}}</option>
-                            </select>
-                        </div>
-                    </div>
+                    <uib-tabset>
 
-                    <div ng-include="'views/hover_feature.html'"></div>
+                        <uib-tab heading="Analytics">
+
+                            <div ng-include="'views/analytics.html'"></div>
+
+                            <div ng-include="'views/hover_feature.html'"></div>
+
+                        </uib-tab>
+
+                        <uib-tab heading="Theming">
+
+                            <br>
+                            <div ng-show="themes">
+                                <div class=form-group>
+                                    <label>Select theme:</label>
+                                    <select class="form-control" ng-model="selectedTheme" ng-change="switchTheme(selectedTheme)">
+                                        <option>Default</option>
+                                        <option ng-repeat="theme in themes">{{theme}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </uib-tab>
+
+                        <uib-tab heading="Assumptions">
+
+                            <br>
+                            <formly-form model="assumptions()" fields="globalFields"/>
+                        </uib-tab>
+
+                    </uib-tabset>
+
                 </div>
 
             </div>

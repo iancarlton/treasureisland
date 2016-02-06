@@ -350,7 +350,7 @@ app.controller("mainCtrl", function($scope, $rootScope, $firebaseObject) {
 
 var throttledAnalytics = _.throttle(config.aggregateAnalytics, 500);
 
-app.controller("analyticsCtrl", function($scope, $rootScope) {
+app.controller("analyticsCtrl", function($scope, $rootScope, $firebaseObject) {
 
     // controller for the analytics window
 
@@ -359,7 +359,26 @@ app.controller("analyticsCtrl", function($scope, $rootScope) {
 
     $rootScope.$watch("activeScenario", function () {
         $scope.switchTheme($scope.selectedTheme);
+
+        var ref = new Firebase($scope.firebaseUrl()).child("assumptions");
+
+        if($scope.unbind) {
+            $scope.unbind();
+        }
+
+        $firebaseObject(ref).$bindTo($scope, "assumptionsObj").then(function(unbind) {
+            $scope.unbind = unbind;
+        });
     });
+
+    $scope.assumptions = function () {
+        // I'm not totally sure why this needs to be a function - but it
+        // has something to do with the scope changing inside the ui-tabset
+        return $scope.assumptionsObj;
+    }
+
+    $scope.assumptionsObj = {};
+    $scope.globalFields = config.globalForm();
 
     $scope.switchTheme = function (t) {
 
