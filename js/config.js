@@ -57,15 +57,19 @@ config = {
             outlineColor: "#000000",
             highlightColor: "#ffb3ff",
             interpolate: ["#fff7fb", "#023858"]
-        }
+        },
+
     },
 
     editableAttributes: function () {
         return  [
-            {key: "residentialUnits", label: "Residential Units"},
-            {key: "nonResidentialSqft", label: "Non-residential Sqft"},
+            //{key: "residentialUnits", label: "Residential Units"},
+            //{key: "nonResidentialSqft", label: "Non-residential Sqft"},
             {key: "maxDua", label: "Max DUA"},
-            {key: "maxFar", label: "Max FAR"}
+            {key: "maxFar", label: "Max FAR"},
+            {key: "rentSqftRes", label: "Residential Rent ($/sqft/month)"},
+            {key: "rentSqftComm", label: "Non-residential Rent ($/sqft/year)"},
+            {key: "landPrep", label: "Land Prep Cost (Demo Cost)"}
         ]
     },
 
@@ -89,6 +93,34 @@ config = {
 
     runAnalytics: function (features, callback) {
 
+        // global assumptions, hard coded for now, but
+        // will be entered by the user
+        var globals = {
+            constructCost: 185, // $/SqFt hard cost
+            softCost: 0.40, // % of hard cost
+            capRate: 0.045,
+            goInCapSpread: 0.20, // % over blended CAP
+            inclusionary: 0.20, // % of Res sq ft
+            affDepth: 0.6 // % of AMI
+        };
+
+        var defaults = {
+            rentSqftRes: 4, // $/SqFt/month
+            rentSqftComm: 20, // $/SqFt/year NNN
+            maxDua: 0,
+            maxFar: 0,
+            landPrep: 0
+        };
+
+        var proFormas = _.map(features, function (f) {
+            var p = f.properties;
+            _.each(_.keys(defaults), function (prop) {
+                if(!p[prop]) p[prop] = defaults[prop];
+            });
+            if(!p.parcelSize) p.parcelSize = f.parcel_size;
+            return ROCpencil(p, globals);
+        });
+
         var v = {
             "raw_residential_capacity": d3.sum(features, function (v) {
                 return v.properties.maxDua * v.properties.parcelAcres;
@@ -96,11 +128,20 @@ config = {
             "raw_non_residential_capacity": d3.sum(features, function (v) {
                 return v.properties.maxFar * v.properties.parcelAcres * 43560;
             }),
-            "total_residential_units": d3.sum(features, function (v) {
-                return v.properties.residentialUnits;
+            "total_residential_units": d3.sum(proFormas, function (pf) {
+                return pf.unitsTotal;
             }),
-            "total_non_residential_sqft": d3.sum(features, function (v) {
-                return v.properties.nonResidentialSqft;
+            "total_affordable_units": d3.sum(proFormas, function (pf) {
+                return pf.unitsAff;
+            }),
+            "total_non_residential_sqft": d3.sum(proFormas, function (pf) {
+                return pf.commSqFt;
+            }),
+            "total_tif_capacity": d3.sum(proFormas, function (pf) {
+                return pf.tifCapacity;
+            }),
+            "total_residential_land": d3.sum(proFormas, function (pf) {
+                return pf.residualLand;
             }),
             "total_acres": d3.sum(features, function (v) {
                 return v.properties.parcelAcres;
@@ -145,9 +186,10 @@ config = {
             var ref = new Firebase(url).child("places").child(feature.properties.parcel_id);
 
             [
-                {key: "residentialUnits", prop: "total_residential_units"},
-                {key: "nonResidentialSqft", prop: "total_non_residential_sqft"},
-                {key: "parcelAcres", prop: "parcel_acres"}
+                //{key: "residentialUnits", prop: "total_residential_units"},
+                //{key: "nonResidentialSqft", prop: "total_non_residential_sqft"},
+                //{key: "parcelSize", prop: "parcel_size"},
+                //{key: "parcelAcres", prop: "parcel_acres"}
                 
             ].forEach(function (obj) {
 

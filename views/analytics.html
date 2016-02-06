@@ -1,8 +1,11 @@
 <h2><b>Data Summary</b></h2>
 <p class="lead">
-Total Residential Units: {{analytics.total_residential_units}}<br>
-Total Non-residential Sqft: {{analytics.total_non_residential_sqft | numeraljs:'0,0'}}<br>
+Feasible Residential Units: {{analytics.total_residential_units || 0}}<br>
+Affordable Units: {{analytics.total_affordable_units || 0}}<br>
+Feasible Comm Sqft: {{analytics.total_non_residential_sqft | inMillions | numeraljs:'0,0.0'}}M<br>
+Land Proceeds: {{analytics.total_residential_land | inMillions | numeraljs:'0,0.0'}}M<br>
+TIF Capacity: {{analytics.total_tif_capacity | inMillions | numeraljs:'0,0.0'}}M<br>
 Total Acres: {{analytics.total_acres | numeraljs:'0,0'}}<br>
 Raw Residential Capacity: {{analytics.raw_residential_capacity | numeraljs:'0,0'}} Units<br>
-Raw Non-res Capacity: {{analytics.raw_non_residential_capacity | inMillions | numeraljs:'0,0.00'}}M Sqft
+Raw Comm Capacity: {{analytics.raw_non_residential_capacity | inMillions | numeraljs:'0,0.0'}}M Sqft
 </p>
