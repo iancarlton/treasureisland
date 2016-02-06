@@ -378,10 +378,8 @@ app.controller("analyticsCtrl", function($scope, $rootScope) {
         t = config.themes[t];
 
         var getAttr = function (layer, attr) {
-            var key = layer.feature.properties[config.keyAttr];
-            var rec = $rootScope.db[key];
-            if(!rec) return undefined;
-            return +rec[attr];
+            var f = config.getFullFeature(layer.feature, $rootScope.db);
+            return +f.properties[attr];
         }
 
         var vals = [];

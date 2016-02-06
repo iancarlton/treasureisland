@@ -45,26 +45,51 @@ config = {
             interpolate: ["#f7fbff", "#08306b"]
         },
         "Residential Units": {
-            attr: "residentialUnits",
+            attr: "unitsTotal",
             opacity: .9,
             outlineColor: "#000000",
             highlightColor: '#ffffcc',
             interpolate: ["#fff7ec", "#7f0000"]
         },
-        "Non-residential Sqft": {
-            attr: "nonResidentialSqft",
+        "Affordable Units": {
+            attr: "unitsAff",
+            opacity: .9,
+            outlineColor: "#000000",
+            highlightColor: '#ffffcc',
+            interpolate: ["#fff7ec", "#7f0000"]
+        },
+        "Commercial Sqft": {
+            attr: "commSqFt",
             opacity: .9,
             outlineColor: "#000000",
             highlightColor: "#ffb3ff",
-            interpolate: ["#fff7fb", "#023858"]
+            interpolate: ["#f7fbff", "#08306b"]
         },
-
+        "Return on Cost": {
+            attr: "roc",
+            opacity: .9,
+            outlineColor: "#000000",
+            highlightColor: "#ffb3ff",
+            interpolate: ["#ffffe5", "#004529"]
+        },
+        "Land Residual": {
+            attr: "residualLand",
+            opacity: .9,
+            outlineColor: "#000000",
+            highlightColor: "#ffb3ff",
+            interpolate: ["#ffffe5", "#004529"]
+        },
+        "TIF Capacity": {
+            attr: "tifCapacity",
+            opacity: .9,
+            outlineColor: "#000000",
+            highlightColor: "#ffb3ff",
+            interpolate: ["#ffffe5", "#004529"]
+        }
     },
 
     editableAttributes: function () {
         return  [
-            //{key: "residentialUnits", label: "Residential Units"},
-            //{key: "nonResidentialSqft", label: "Non-residential Sqft"},
             {key: "maxDua", label: "Max DUA"},
             {key: "maxFar", label: "Max FAR"},
             {key: "rentSqftRes", label: "Residential Rent ($/sqft/month)"},
@@ -111,7 +136,7 @@ config = {
             "total_tif_capacity": d3.sum(features, function (v) {
                 return v.properties.tifCapacity;
             }),
-            "total_residential_land": d3.sum(features, function (v) {
+            "total_residual_land": d3.sum(features, function (v) {
                 return v.properties.residualLand;
             }),
             "total_acres": d3.sum(features, function (v) {
@@ -151,7 +176,7 @@ config = {
         _.each(_.keys(defaults), function (prop) {
             if(!p[prop]) p[prop] = defaults[prop];
         });
-        if(!p.parcelSize) p.parcelSize = f.parcel_size;
+        p.parcelSize = f.properties.parcel_size;
 
         // do the pro forma
         return ROCpencil(p, globals);

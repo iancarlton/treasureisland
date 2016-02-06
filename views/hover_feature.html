@@ -1,10 +1,11 @@
 <span ng-show="hoverFeature">
-<div style="height: 15px;"></div>
-<p class="lead">
+<p>
 <b>Parcel Id: {{hoverFeature.properties.parcel_id}}</b><br>
-Residential Rent: {{hoverFeature.properties.rentSqftRes || 0}}<br>
-Commercial Rent: {{hoverFeature.properties.rentSqftComm || 0}}<br>
 Max Dua: {{hoverFeature.properties.maxDua || 0}}<br>
-Max Far: {{hoverFeature.properties.maxFar || 0}}
+Feasible Units: {{hoverFeature.properties.unitsTotal || 0}}<br>
+Affordable Units: {{hoverFeature.properties.unitsAff || 0}}<br>
+Return on Cost: {{hoverFeature.properties.roc || 0 | numeraljs:'.000'}}<br>
+Tif Capacity: {{(hoverFeature.properties.tifCapacity || 0) | inMillions | numeraljs:'0,0.0'}}M<br>
+Land Residual: {{(hoverFeature.properties.residualLand || 0) | inMillions | numeraljs:'0,0.0'}}M
 </p>
 </span>
