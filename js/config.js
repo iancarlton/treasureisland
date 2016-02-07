@@ -164,11 +164,11 @@ config = {
     },
 
     // add analytics for a single feature
-    runAnalytics(f) {
+    runAnalytics(f, assumptions) {
 
         // global assumptions, hard coded for now, but
         // will be entered by the user
-        var globals = {
+        var defaultGlobals = {
             constructCost: 185, // $/SqFt hard cost
             softCost: 0.40, // % of hard cost
             capRate: 0.045,
@@ -185,6 +185,8 @@ config = {
             landPrep: 0
         };
 
+        assumptions = _.extend(defaultGlobals, assumptions); 
+
         var p = f.properties;
 
         // set some default if they don't exist
@@ -194,13 +196,13 @@ config = {
         p.parcelSize = f.properties.parcel_size;
 
         // do the pro forma
-        return ROCpencil(p, globals);
+        return ROCpencil(p, assumptions);
     },
 
     // this is a rather odd but important function which merged the "base"
     // data which comes out of the geojson with the override attribute
     // data which comes out of firebase
-    getFullFeature: function (f, db) {
+    getFullFeature: function (f, db, assumptions) {
         // make a copy
         f = JSON.parse(JSON.stringify(f));
 
@@ -211,7 +213,7 @@ config = {
         // add firebase attributes to properties
         _.extend(f.properties, db[key]);
         // add analytic attribute under pf attribute
-        _.extend(f.properties, config.runAnalytics(f));
+        _.extend(f.properties, config.runAnalytics(f, assumptions));
 
         return f;
     },

@@ -110,7 +110,8 @@ app.run(function($rootScope, $firebaseArray) {
 
         return _.map(features, function (f) {
 
-            return config.getFullFeature(f, db);
+            return config.getFullFeature(f, $rootScope.db,
+                $rootScope.assumptions);
         });
     };
 
@@ -150,7 +151,8 @@ app.run(function($rootScope, $firebaseArray) {
                     // being hovered over
                     $rootScope.hoverFeature = 
                         config.getFullFeature(
-                            layer.feature, $rootScope.db);
+                            layer.feature, $rootScope.db, 
+                            $rootScope.assumptions);
                 });
 
                 if(disableHighlight) return;
@@ -365,9 +367,23 @@ app.controller("analyticsCtrl", function($scope, $rootScope, $firebaseObject) {
         if($scope.unbind) {
             $scope.unbind();
         }
+        if($scope.unwatch) {
+            $scope.unwatch();
+        }
 
-        $firebaseObject(ref).$bindTo($scope, "assumptionsObj").then(function(unbind) {
+        var obj = $firebaseObject(ref);
+        obj.$bindTo($scope, "assumptionsObj").then(function(unbind) {
             $scope.unbind = unbind;
+        });
+        obj.$loaded(function() {  
+            // copy from scope to root scope
+            $rootScope.assumptions = $scope.assumptionsObj;
+            $rootScope.$broadcast('dataUpdated');
+        });
+        $scope.unwatch = obj.$watch(function (nv) {
+            // copy from scope to root scope
+            $rootScope.assumptions = $scope.assumptionsObj;
+            $rootScope.$broadcast('dataUpdated');
         });
     });
 
@@ -397,7 +413,8 @@ app.controller("analyticsCtrl", function($scope, $rootScope, $firebaseObject) {
         t = config.themes[t];
 
         var getAttr = function (layer, attr) {
-            var f = config.getFullFeature(layer.feature, $rootScope.db);
+            var f = config.getFullFeature(layer.feature, $rootScope.db, 
+                $rootScope.assumptions);
             return +f.properties[attr];
         }
 
@@ -434,7 +451,7 @@ app.controller("analyticsCtrl", function($scope, $rootScope, $firebaseObject) {
     $rootScope.$on("dataUpdated", function (features) {
 
         var features = $rootScope.getFullFeatures(
-            $rootScope.features, $rootScope.db);
+            $rootScope.features, $rootScope.db, $rootScope.assumptions);
 
         if(!features) return;
 
