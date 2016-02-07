@@ -123,8 +123,28 @@ ROCpencil = function(p, u) {
     var TaxRev = Value * TaxRate;
     var TIbond = TaxRev * BondMult;
 
+    // ###################################
+    // Fifth, produce feasibility indicator
+    // ###################################
+    
+    var Feasibility = 2;
+    
+    if (ROC < u.CAPrate) {
+
+        Feasibility = -1; //Display parcel color = red; Perhaps set Feasibility equal to value for red
+
+    } else if (ROC < u.CAPrate + u.goInCapSpread) {
+
+        Feasibility = 0; //Display parcel color = yellow; Perhaps set Feasibility equal to value for yellow
+
+    } else {
+
+        Feasibility = 1; //Display parcel color = green; Perhaps set Feasibility equal to value for green
+    }
+    
     // return key parcel feasibility calcs
     return {
+        feasibility: Feasibility
         resSqFt: floorRes / BldgEff,
         unitsTotal: Math.floor(floorRes / UnitSize),
         unitsAff: Math.ceil(floorRes / UnitSize * u.inclusionary),
