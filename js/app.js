@@ -360,6 +360,7 @@ app.controller("analyticsCtrl", function($scope, $rootScope, $firebaseObject) {
     $scope.themes = _.keys(config.themes);
 
     $rootScope.$watch("activeScenario", function () {
+
         $scope.switchTheme($scope.selectedTheme);
 
         var ref = new Firebase($scope.firebaseUrl()).child("assumptions");
@@ -397,6 +398,8 @@ app.controller("analyticsCtrl", function($scope, $rootScope, $firebaseObject) {
     $scope.globalFields = config.globalForm();
 
     $scope.switchTheme = function (t) {
+
+        $scope.selectedTheme = t;
 
         if(t == "Default") {
 
