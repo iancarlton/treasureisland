@@ -44,6 +44,20 @@ config = {
             highlightColor: "#ffb3ff",
             interpolate: ["#f7fbff", "#08306b"]
         },
+        "Residential Rent": {
+            attr: "rentSqftRes",
+            opacity: .9,
+            outlineColor: "#000000",
+            highlightColor: '#ffffcc',
+            interpolate: ["#fff7ec", "#7f0000"]
+        },
+        "Commercial Rent": {
+            attr: "rentSqftComm",
+            opacity: .9,
+            outlineColor: "#000000",
+            highlightColor: '#ffffcc',
+            interpolate: ["#fff7ec", "#7f0000"]
+        },
         "Residential Units": {
             attr: "unitsTotal",
             opacity: .9,
