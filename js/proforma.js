@@ -144,7 +144,7 @@ ROCpencil = function(p, u) {
     
     // return key parcel feasibility calcs
     return {
-        feasibility: Feasibility
+        feasibility: Feasibility,
         resSqFt: floorRes / BldgEff,
         unitsTotal: Math.floor(floorRes / UnitSize),
         unitsAff: Math.ceil(floorRes / UnitSize * u.inclusionary),
