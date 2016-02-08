@@ -116,7 +116,7 @@ config = {
             {key: "softCost", label: "Soft Cost"},
             {key: "capRate", label: "Cap Rate"},
             {key: "goInCapSpread", label: "Cap Spread"},
-            {key: "inclusionary", label: "inclusionary"},
+            {key: "inclusionary", label: "Inclusionary"},
             {key: "addordableDepth", label: "AffordableDepth"}
         ]
     },
