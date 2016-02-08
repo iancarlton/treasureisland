@@ -85,6 +85,18 @@ config = {
             outlineColor: "#000000",
             highlightColor: "#ffb3ff",
             interpolate: ["#ffffe5", "#004529"]
+        }, 
+        "Feasibility": {
+            attr: "feasibility",
+            opacity: .9,
+            outlineColor: "#000000",
+            highlightColor: "#ffb3ff",
+            categorical: {
+                "-1": "#660000",
+                "0": "#cccc00",
+                "1": "#006600",
+                "2": ""
+            }
         }
     },
 
@@ -209,6 +221,10 @@ config = {
         // return geojson feature if firebase object does not yet exist
         var key = f.properties[config.keyAttr];
         if(!db || !db[key]) return f;
+
+        _.each(_.keys(assumptions), function (key) {
+            assumptions[key] = +assumptions[key];
+        });
 
         // add firebase attributes to properties
         _.extend(f.properties, db[key]);

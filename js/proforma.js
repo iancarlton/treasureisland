@@ -129,11 +129,15 @@ ROCpencil = function(p, u) {
     
     var Feasibility = 2;
     
-    if (ROC < u.CAPrate) {
+    if (!ROC) {
+
+        Feasibility = 2;
+
+    } else if (ROC < u.capRate) {
 
         Feasibility = -1; //Display parcel color = red; Perhaps set Feasibility equal to value for red
 
-    } else if (ROC < u.CAPrate + u.goInCapSpread) {
+    } else if (ROC < u.capRate + u.goInCapSpread) {
 
         Feasibility = 0; //Display parcel color = yellow; Perhaps set Feasibility equal to value for yellow
 

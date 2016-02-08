@@ -426,10 +426,18 @@ app.controller("analyticsCtrl", function($scope, $rootScope, $firebaseObject) {
             vals.push(getAttr(layer, t.attr));
         });
 
-        var scale = d3.scale.linear()
+        var scale;
+
+        if(t.interpolate) {
+            scale = d3.scale.linear()
             .domain(d3.extent(vals))
             .interpolate(d3.interpolateRgb)
             .range(t.interpolate)
+        } else if (t.categorical) {
+            scale = function (v) {
+                return t.categorical[v];
+            }
+        }
 
         featureLayer.eachLayer(function (layer) {
 
@@ -439,7 +447,10 @@ app.controller("analyticsCtrl", function($scope, $rootScope, $firebaseObject) {
             };
 
             if(t.opacity) style.fillOpacity = t.opacity;
-            if(!v) style.fillOpacity = 0;
+
+            if(v == undefined || Number.isNaN(v) || !scale(v))
+                style.fillOpacity = 0;
+
             if(t.outlineColor) {
                 style.color = t.outlineColor;
                 highlightStyle.color = t.outlineColor;
