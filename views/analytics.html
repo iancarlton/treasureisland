@@ -1,12 +1,14 @@
 <h2><b>Data Summary</b></h2>
 <p class="lead">
-Feasible Residential Units: {{analytics.total_residential_units || 0}}<br>
+<em>Pro Forma Output</em><br>
+Total Residential Units: {{analytics.total_residential_units || 0}}<br>
 Affordable Units: {{analytics.total_affordable_units || 0}}<br>
+Commercial Square Feet: {{analytics.total_non_residential_sqft | inMillions | numeraljs:'0,0.0'}}M<br>
 Land Proceeds: {{analytics.total_residual_land | inMillions | numeraljs:'0,0.0'}}M<br>
 TIF Capacity: {{analytics.total_tif_capacity | inMillions | numeraljs:'0,0.0'}}M
 </p><p>
-Feasible Comm Sqft: {{analytics.total_non_residential_sqft | inMillions | numeraljs:'0,0.0'}}M<br>
+<em>Capacity Input</em><br>
 Total Acres: {{analytics.total_acres | numeraljs:'0,0'}}<br>
 Raw Residential Capacity: {{analytics.raw_residential_capacity | numeraljs:'0,0'}} Units<br>
-Raw Comm Capacity: {{analytics.raw_non_residential_capacity | inMillions | numeraljs:'0,0.0'}}M Sqft
+Raw Commercial Capacity: {{analytics.raw_non_residential_capacity | inMillions | numeraljs:'0,0.0'}}M Sqft
 </b></p>
