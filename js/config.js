@@ -120,18 +120,18 @@ config = {
             {key: "maxFar", label: "Max FAR"},
             {key: "rentSqftRes", label: "Residential Rent ($/sqft/month)"},
             {key: "rentSqftComm", label: "Non-residential Rent ($/sqft/year)"},
-            {key: "landPrep", label: "Land Prep Cost (Demo Cost)"}
+            {key: "landPrep", label: "Land Prep Cost (Demo Cost in total $'s)"}
         ]
     },
 
     globalAttributes: function () {
         return [
-            {key: "constructCost", label: "Contruction Cost"},
-            {key: "softCost", label: "Soft Cost"},
-            {key: "capRate", label: "Cap Rate"},
-            {key: "goInCapSpread", label: "Cap Spread"},
-            {key: "inclusionary", label: "Inclusionary"},
-            {key: "addordableDepth", label: "AffordableDepth"}
+            {key: "constructCost", label: "Contruction Cost (average $/sqft)"},
+            {key: "softCost", label: "Soft Cost (% of hard cost)"},
+            {key: "capRate", label: "Market CAP Rate"},
+            {key: "goInCapSpread", label: "CAP Spread (Going in CAP % over Market CAP Rate)"},
+            {key: "inclusionary", label: "Inclusionary Rate (% of units)"},
+            {key: "addordableDepth", label: "Depth of Affordability (% of AMI)"}
         ]
     },
 
